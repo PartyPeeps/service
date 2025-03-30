@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import ro.unibuc.hello.data.LocationEntity;
 import ro.unibuc.hello.data.PartyEntity;
 import ro.unibuc.hello.service.PartyService;
+import ro.unibuc.hello.dto.ErrorResponse;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,20 +72,26 @@ class LocationControllerTest {
     void testAddLocationToParty() {
         when(partyService.addLocationToParty("party123", "loc1")).thenReturn(testParty);
 
-        ResponseEntity<PartyEntity> response = partyController.addLocationToParty("party123", "loc1");
+        ResponseEntity<Object> response = partyController.addLocationToParty("party123", "loc1");
 
         assertNotNull(response.getBody());
-        assertEquals("party123", response.getBody().getId());
+        assertTrue(response.getBody() instanceof PartyEntity);
+        PartyEntity party = (PartyEntity) response.getBody();
+        assertEquals("party123", party.getId());
     }
 
     @Test
     void testAddLocationToParty_NotFound() {
         when(partyService.addLocationToParty("party123", "loc3")).thenReturn(null);
 
-        ResponseEntity<PartyEntity> response = partyController.addLocationToParty("party123", "loc3");
+        ResponseEntity<Object> response = partyController.addLocationToParty("party123", "loc3");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody() instanceof ErrorResponse);
+        ErrorResponse errorResponse = (ErrorResponse) response.getBody();
+        assertEquals("Location not found", errorResponse.getMessage());
     }
+
 
     @Test
     void testRemoveLocationFromParty() {

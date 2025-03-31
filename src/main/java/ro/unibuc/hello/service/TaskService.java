@@ -7,7 +7,7 @@ import ro.unibuc.hello.data.TaskEntity;
 import ro.unibuc.hello.repositories.TaskRepository;
 import ro.unibuc.hello.repositories.UserRepository;
 import ro.unibuc.hello.repositories.PartyRepository;
-
+//import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +76,7 @@ public class TaskService {
                 }
             }
 
-            // Actualizează task-ul
+            // Actualizare task
             updatedTask.setId(id);
             return taskRepository.save(updatedTask);
         }
@@ -86,4 +86,16 @@ public class TaskService {
     public void deleteTask(String id) {
         taskRepository.deleteById(id);
     }
+
+    // @PostConstruct
+    // public void init() {
+    //     if (taskRepository.count() == 0) { // Se asigură că nu există deja task-uri
+    //         TaskEntity task1 = new TaskEntity("Task 100 Points", "Un task important", 100, null, null);
+    //         TaskEntity task2 = new TaskEntity("Task 200 Points", "Un task și mai important", 200, null, null);
+
+    //         taskRepository.save(task1);
+    //         taskRepository.save(task2);
+    //     }
+    // }
+
 }

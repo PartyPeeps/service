@@ -92,13 +92,13 @@ GET http://localhost:8080/parties/{id}/foods?maxPoints={{maxPoints}}
 ### Adaugă un produs alimentar la o petrecere
 # @prompt partyId Introdu ID-ul petrecerii
 # @prompt foodId Introdu ID-ul produsului alimentar
-POST http://localhost:8080/parties/{{partyId}}/foods/{{foodId}}
+PUT http://localhost:8080/parties/{{partyId}}/foods/{{foodId}}
 Content-Type: application/json
 
 ### Adaugă un produs alimentar la o petrecere
 # @prompt partyId Introdu ID-ul petrecerii
 # @prompt locationId Introdu ID-ul produsului alimentar
-POST http://localhost:8080/parties/{{partyId}}/location/{{locationId}}
+PUT http://localhost:8080/parties/{{partyId}}/location/{{locationId}}
 Content-Type: application/json
 
 ### Get all tasks for a party

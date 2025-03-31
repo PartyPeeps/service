@@ -7,6 +7,7 @@ import ro.unibuc.hello.data.PartyWithSongsResponse;
 import ro.unibuc.hello.data.SongEntity;
 import ro.unibuc.hello.data.UserEntity;
 import ro.unibuc.hello.repositories.PartyRepository;
+import ro.unibuc.hello.dto.ErrorResponse;
 
 import ro.unibuc.hello.service.PartyService;
 import ro.unibuc.hello.data.LocationEntity;
@@ -219,18 +220,27 @@ public class PartyController {
         partyRepository.deleteById(id);
     }
 
-    @PostMapping("/{partyId}/foods/{foodId}")
+    @PutMapping("/{partyId}/foods/{foodId}")
     public ResponseEntity<PartyEntity> addFoodToParty(@PathVariable String partyId, @PathVariable String foodId) {
         PartyEntity updatedParty = partyService.addFoodToParty(partyId, foodId);
         return updatedParty != null ? ResponseEntity.ok(updatedParty) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/{partyId}/location/{locationId}")
-    public ResponseEntity<PartyEntity> addLocationToParty(@PathVariable String partyId,
-            @PathVariable String locationId) {
-        PartyEntity updatedParty = partyService.addLocationToParty(partyId, locationId);
-        return updatedParty != null ? ResponseEntity.ok(updatedParty) : ResponseEntity.notFound().build();
+    @PutMapping("/{partyId}/location/{locationId}")
+    public ResponseEntity<Object> addLocationToParty(@PathVariable String partyId,
+                                                    @PathVariable String locationId) {
+        try {
+            PartyEntity updatedParty = partyService.addLocationToParty(partyId, locationId);
+            return updatedParty != null ? ResponseEntity.ok(updatedParty) : ResponseEntity.notFound().build();
+        } catch (RuntimeException e) {
+            ErrorResponse errorResponse = new ErrorResponse("Location not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
     }
+
+
+
+
 
     @GetMapping("/{id}/locations")
     public List<LocationEntity> getAvailableLocationsForParty(

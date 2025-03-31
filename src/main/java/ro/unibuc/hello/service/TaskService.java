@@ -7,7 +7,7 @@ import ro.unibuc.hello.data.TaskEntity;
 import ro.unibuc.hello.repositories.TaskRepository;
 import ro.unibuc.hello.repositories.UserRepository;
 import ro.unibuc.hello.repositories.PartyRepository;
-
+//import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +76,7 @@ public class TaskService {
                 }
             }
 
-            // Actualizează task-ul
+            // Actualizare task
             updatedTask.setId(id);
             return taskRepository.save(updatedTask);
         }
@@ -86,4 +86,6 @@ public class TaskService {
     public void deleteTask(String id) {
         taskRepository.deleteById(id);
     }
+
+
 }

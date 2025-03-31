@@ -844,6 +844,7 @@ Caused by: java.net.SocketException: Connection reset
 2025-03-30T18:08:41.234Z  INFO 82006 --- [Test worker] .u.h.c.LocationControllerIntegrationTest : Started LocationControllerIntegrationTest in 7.946 seconds (process running for 18.802)
 2025-03-30T18:08:43.750Z  INFO 82006 --- [cluster-ClusterId{value='67e988a5a485486c0267fc14', description='null'}-localhost:32802] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32802
 
+
 com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:184) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -851,6 +852,7 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.InternalStreamConnection.receive(InternalStreamConnection.java:469) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
+
 
 2025-03-30T18:08:43.786Z  INFO 82006 --- [cluster-ClusterId{value='67e988a5a485486c0267fc14', description='null'}-localhost:32802] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32802
 
@@ -900,6 +902,7 @@ Caused by: java.net.SocketException: Connection reset
 2025-03-30T18:08:50.202Z  INFO 82006 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Started GreetingsControllerIntegrationTest in 1.627 seconds (process running for 27.77)
 2025-03-30T18:08:50.467Z  INFO 82006 --- [cluster-ClusterId{value='67e988b1a485486c0267fc2b', description='null'}-localhost:32803] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32803
 
+
 com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:184) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -907,6 +910,7 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.InternalStreamConnection.receive(InternalStreamConnection.java:469) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
+
 
 2025-03-30T18:14:44.072Z  INFO 88857 --- [Test worker] .u.h.c.LocationControllerIntegrationTest : Starting LocationControllerIntegrationTest using Java 21.0.5 with PID 88857 (started by codespace in /workspaces/service)
 2025-03-30T18:14:44.091Z DEBUG 88857 --- [Test worker] .u.h.c.LocationControllerIntegrationTest : Running with Spring Boot v3.4.0, Spring v6.2.0
@@ -936,6 +940,7 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 
 2025-03-30T18:14:55.055Z  INFO 88857 --- [cluster-ClusterId{value='67e98a177501ae389acf3742', description='null'}-localhost:32805] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32805
 
+
 com.mongodb.MongoSocketReadException: Exception receiving message
 	at com.mongodb.internal.connection.InternalStreamConnection.translateReadException(InternalStreamConnection.java:814) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:862) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -958,6 +963,7 @@ Caused by: java.net.SocketException: Connection reset
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:182) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
 	... 11 common frames omitted
+
 
 2025-03-30T18:14:55.326Z  INFO 88857 --- [Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ro.unibuc.hello.controller.GreetingsControllerIntegrationTest]: GreetingsControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
 2025-03-30T18:14:55.338Z  INFO 88857 --- [Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ro.unibuc.hello.PartyPlanningApp for test class ro.unibuc.hello.controller.GreetingsControllerIntegrationTest
@@ -1008,6 +1014,7 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 2025-03-31T09:50:42.670Z  INFO 9541 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Started GreetingsControllerIntegrationTest in 7.076 seconds (process running for 37.229)
 2025-03-31T09:50:45.182Z  INFO 9541 --- [cluster-ClusterId{value='67ea656f2287ad54b24a6eab', description='null'}-localhost:32769] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32769
 
+
 com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:184) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -1015,6 +1022,7 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.InternalStreamConnection.receive(InternalStreamConnection.java:469) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
+
 
 2025-03-31T09:50:45.217Z  INFO 9541 --- [cluster-ClusterId{value='67ea656f2287ad54b24a6eab', description='null'}-localhost:32769] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32769
 
@@ -1128,4 +1136,5 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.InternalStreamConnection.receive(InternalStreamConnection.java:469) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
+
 

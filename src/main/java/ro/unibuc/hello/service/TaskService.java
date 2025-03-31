@@ -87,15 +87,5 @@ public class TaskService {
         taskRepository.deleteById(id);
     }
 
-    // @PostConstruct
-    // public void init() {
-    //     if (taskRepository.count() == 0) { // Se asigură că nu există deja task-uri
-    //         TaskEntity task1 = new TaskEntity("Task 100 Points", "Un task important", 100, null, null);
-    //         TaskEntity task2 = new TaskEntity("Task 200 Points", "Un task și mai important", 200, null, null);
-
-    //         taskRepository.save(task1);
-    //         taskRepository.save(task2);
-    //     }
-    // }
 
 }

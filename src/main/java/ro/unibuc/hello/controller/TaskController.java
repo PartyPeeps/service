@@ -50,14 +50,15 @@ public class TaskController {
 
     // PUT: Update an existing task
     @PutMapping("/{id}")
-    public ResponseEntity<TaskEntity> updateTask(@PathVariable String id, @RequestBody TaskEntity updatedTask) {
-        TaskEntity updated = taskService.updateTask(id, updatedTask);
-        
-        if (updated != null) {
+    public ResponseEntity<?> updateTask(@PathVariable String id, @RequestBody TaskEntity updatedTask) {
+        try {
+            TaskEntity updated = taskService.updateTask(id, updatedTask);
             return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body("{\"message\": \"Task not found\"}");
         }
-        return ResponseEntity.notFound().build();
     }
+    
 
     // DELETE: Remove a task
     @DeleteMapping("/{id}")

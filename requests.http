@@ -109,6 +109,38 @@ GET http://localhost:8080/parties/{{partyId}}/tasks
 # @prompt taskId Task ID to get details for
 GET http://localhost:8080/tasks/{{taskId}}
 
+### Get all tasks assigned to a user
+# @prompt userId User ID to get the tasks for
+GET http://localhost:8080/tasks/user/{{userId}}
+
+### Create a new task
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "name": "New Task",
+  "description": "This is a new task",
+  "points": 15,
+  "partyId": [],
+  "assignedUserId": [],
+  "completed": false
+}
+
+### Update an existing task
+# @prompt taskId Task ID to update
+PUT http://localhost:8080/tasks/{{taskId}}
+Content-Type: application/json
+
+{
+  "id": "{{taskId}}",
+  "name": "Updated Task",
+  "description": "Updated description",
+  "points": 20,
+  "partyId": [],
+  "assignedUserId": [],
+  "completed": true
+}
+
 ### Delete a task
 # @prompt taskId Task ID to delete
 DELETE http://localhost:8080/tasks/{{taskId}}

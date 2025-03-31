@@ -1,3 +1,4 @@
+
 2025-03-31T08:12:36.717Z  INFO 34776 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Starting GreetingsControllerIntegrationTest using Java 21.0.5 with PID 34776 (started by codespace in /workspaces/service)
 2025-03-31T08:12:36.719Z DEBUG 34776 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Running with Spring Boot v3.4.0, Spring v6.2.0
 2025-03-31T08:12:36.721Z  INFO 34776 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
@@ -15,6 +16,7 @@
 2025-03-31T08:12:42.388Z  INFO 34776 --- [Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 33 ms
 2025-03-31T08:12:42.521Z  INFO 34776 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Started GreetingsControllerIntegrationTest in 7.166 seconds (process running for 37.546)
 2025-03-31T08:12:44.967Z  INFO 34776 --- [cluster-ClusterId{value='67ea4e778f36204897f2aaac', description='null'}-localhost:32769] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32769
+
 
 com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:184) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -50,7 +52,9 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
 
+
 2025-03-31T08:19:31.569Z  INFO 40150 --- [cluster-ClusterId{value='67ea500ead331b15e8f590d2', description='null'}-localhost:32771] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32771
+
 
 com.mongodb.MongoSocketReadException: Exception receiving message
 	at com.mongodb.internal.connection.InternalStreamConnection.translateReadException(InternalStreamConnection.java:814) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -75,6 +79,7 @@ Caused by: java.net.SocketException: Connection reset
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
 	... 11 common frames omitted
 
+
 2025-03-31T08:41:57.881Z  INFO 56258 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Starting GreetingsControllerIntegrationTest using Java 21.0.5 with PID 56258 (started by codespace in /workspaces/service)
 2025-03-31T08:41:57.889Z DEBUG 56258 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Running with Spring Boot v3.4.0, Spring v6.2.0
 2025-03-31T08:41:57.893Z  INFO 56258 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : No active profile set, falling back to 1 default profile: "default"
@@ -93,6 +98,7 @@ Caused by: java.net.SocketException: Connection reset
 2025-03-31T08:42:04.250Z  INFO 56258 --- [Test worker] u.h.c.GreetingsControllerIntegrationTest : Started GreetingsControllerIntegrationTest in 7.703 seconds (process running for 18.931)
 2025-03-31T08:42:06.556Z  INFO 56258 --- [cluster-ClusterId{value='67ea5559f4927d7acb9efa36', description='null'}-localhost:32773] org.mongodb.driver.cluster               : Exception in monitor thread while connecting to server localhost:32773
 
+
 com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.SocketStream.read(SocketStream.java:184) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.InternalStreamConnection.receiveResponseBuffers(InternalStreamConnection.java:829) ~[mongodb-driver-core-5.2.1.jar:na]
@@ -100,4 +106,5 @@ com.mongodb.MongoSocketReadException: Prematurely reached end of stream
 	at com.mongodb.internal.connection.InternalStreamConnection.receive(InternalStreamConnection.java:469) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.lookupServerDescription(DefaultServerMonitor.java:249) ~[mongodb-driver-core-5.2.1.jar:na]
 	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitor.run(DefaultServerMonitor.java:176) ~[mongodb-driver-core-5.2.1.jar:na]
+
 

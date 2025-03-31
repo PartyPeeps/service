@@ -82,7 +82,8 @@ class LocationControllerTest {
 
     @Test
     void testAddLocationToParty_NotFound() {
-        when(partyService.addLocationToParty("party123", "loc3")).thenReturn(null);
+        when(partyService.addLocationToParty("party123", "loc3"))
+        .thenThrow(new RuntimeException("Location not found"));
 
         ResponseEntity<Object> response = partyController.addLocationToParty("party123", "loc3");
 

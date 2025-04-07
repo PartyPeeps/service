@@ -1,141 +1,124 @@
 package ro.unibuc.hello.controller;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.ResponseEntity;
-import ro.unibuc.hello.controller.PartyController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import ro.unibuc.hello.data.PartyEntity;
-import ro.unibuc.hello.data.UserEntity;
 import ro.unibuc.hello.data.SongEntity;
-import ro.unibuc.hello.data.FoodEntity;
-import ro.unibuc.hello.data.LocationEntity;
 import ro.unibuc.hello.repositories.PartyRepository;
 import ro.unibuc.hello.repositories.SongRepository;
-import ro.unibuc.hello.repositories.UserRepository;
-import ro.unibuc.hello.repositories.FoodRepository;
-import ro.unibuc.hello.repositories.LocationRepository;  // Import the LocationRepository
 import ro.unibuc.hello.service.YouTubeService;
-import ro.unibuc.hello.data.PartyWithSongsResponse;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class PlaylistIntegrationTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@Testcontainers
+@Tag("IntegrationTest")
+public class PlaylistIntegrationTest {
 
-    @Mock
+    @Container
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.20")
+            .withExposedPorts(27017)
+            .withSharding();
+
+
+    @AfterAll
+    public static void tearDown() {
+        mongoDBContainer.stop();
+    }
+
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        final String MONGO_URL = "mongodb://localhost:";
+        final String PORT = String.valueOf(mongoDBContainer.getMappedPort(27017));
+
+        registry.add("mongodb.connection.url", () -> MONGO_URL + PORT);
+    }
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
     private PartyRepository partyRepository;
 
-    @Mock
-    private FoodRepository foodRepository;
-
-    @Mock
+    @Autowired
     private SongRepository songRepository;
 
-    @Mock
-    private UserRepository userRepository;  // Mock UserRepository
-
-    @Mock
-    private LocationRepository locationRepository;  // Mock LocationRepository
-
-    @Mock
+    @Autowired
     private YouTubeService youTubeService;
-
-    @InjectMocks
-    private PartyController partyController;
 
     private PartyEntity party;
     private SongEntity song;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        // Initialize PartyEntity and SongEntity with required attributes
-        party = new PartyEntity("Birthday Party", "2025-03-31");
-
-        // Initialize userIds list and add a user
-        party.setUserIds(new ArrayList<>());
-        party.getUserIds().add("user123");  // Add a user ID to the party
+        songRepository.deleteAll();
+        partyRepository.deleteAll();
 
         song = new SongEntity();
-        song.setId("song123");
         song.setTitle("Song Title");
         song.setArtist("Song Artist");
+        song.setPath("https://youtube.com/song123");
+        song = songRepository.save(song);
 
-        // Make sure to add the song to the party
-        party.addSong(song.getId());
+        party = new PartyEntity("Birthday Party", "2025-03-31");
+        party.setUserIds(Collections.singletonList("user123"));
+        party.setPlaylistIds(Collections.singletonList(song.getId()));
+        party = partyRepository.save(party);
     }
 
     @Test
-    void addSongToParty_ShouldAddSongAndUpdateParty() {
-        // Mock YouTube service to return a valid link
-        String youtubeLink = "https://youtube.com/song123";
-        when(youTubeService.searchYouTube(song.getTitle(), song.getArtist())).thenReturn(youtubeLink);
-        when(partyRepository.findById(party.getId())).thenReturn(Optional.of(party));
-        when(songRepository.save(song)).thenReturn(song);
+    @Order(1)
+    void addSongToParty_ShouldAddSongAndUpdateParty() throws Exception {
+        SongEntity newSong = new SongEntity();
+        newSong.setTitle("New Song");
+        newSong.setArtist("New Artist");
 
-        // Call the addSongToParty method
-        ResponseEntity<?> response = partyController.addSongToParty(party.getId(), song);
+        mockMvc.perform(post("/parties/" + party.getId() + "/songs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(newSong)))
+                .andExpect(status().isOk());
 
-        // Verify that the song has been added to the party
-        verify(songRepository, times(1)).save(song);
-        verify(partyRepository, times(1)).save(party);
-
-        // Assert that the song was successfully added
-        assertEquals(200, response.getStatusCode().value());
+        PartyEntity updatedParty = partyRepository.findById(party.getId()).orElseThrow();
+        assertThat(updatedParty.getPlaylistIds()).hasSize(2);
     }
 
     @Test
-    void removeSongFromParty_ShouldRemoveSongAndUpdateParty() {
-        // Setup mock behavior for findById and deleting the song
-        when(partyRepository.findById(party.getId())).thenReturn(Optional.of(party));
-        when(songRepository.findById(song.getId())).thenReturn(Optional.of(song));
+    @Order(2)
+    void removeSongFromParty_ShouldRemoveSongAndUpdateParty() throws Exception {
+        mockMvc.perform(delete("/parties/" + party.getId() + "/songs/" + song.getId()))
+                .andExpect(status().isNoContent());
 
-        // Add song to party manually for the test
-        party.addSong(song.getId());
-
-        // Call the removeSongFromParty method
-        ResponseEntity<?> response = partyController.removeSongFromParty(party.getId(), song.getId());
-
-        // Verify that the song has been removed
-        verify(partyRepository, times(1)).save(party);
-        verify(songRepository, times(1)).delete(song);
-
-        // Assert that the response is OK (status 204 for no content)
-        assertEquals(204, response.getStatusCode().value());
-    }
-
-
-
-
-    @Test
-    void removeSongFromParty_ThatDoesNotExist_ShouldReturnError() {
-        // Mock behavior: song doesn't exist in the party's playlist
-        when(partyRepository.findById(party.getId())).thenReturn(Optional.of(party));
-
-        // Try to remove a non-existent song
-        String nonExistentSongId = "song999";
-        ResponseEntity<?> response = partyController.removeSongFromParty(party.getId(), nonExistentSongId);
-
-        // Verify that the response is 404 Not Found (or some other error)
-        assertEquals(404, response.getStatusCode().value(), "Trying to remove a non-existent song should return an error.");
+        PartyEntity updatedParty = partyRepository.findById(party.getId()).orElseThrow();
+        assertThat(updatedParty.getPlaylistIds()).doesNotContain(song.getId());
     }
 
     @Test
+    @Order(3)
+    void removeSongFromParty_ThatDoesNotExist_ShouldReturnError() throws Exception {
+        mockMvc.perform(delete("/parties/" + party.getId() + "/songs/song999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(4)
     void searchYouTube_ShouldReturnCorrectLink() {
-        // Mock YouTubeService to return the correct YouTube URL
-        String youtubeLink = "https://youtube.com/song123";
-        when(youTubeService.searchYouTube(song.getTitle(), song.getArtist())).thenReturn(youtubeLink);
-
-        // Perform the YouTube search
         String result = youTubeService.searchYouTube(song.getTitle(), song.getArtist());
-
-        // Verify that the YouTube link is correct
-        assertNotNull(result);
-        assertEquals(youtubeLink, result);
+        assertThat(result).isEqualTo("https://www.youtube.com/watch?v=DS-raAyMxl4");
     }
 }

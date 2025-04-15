@@ -5,7 +5,7 @@ pipeline {
     }
      environment {
         DOCKER_PASSWORD = credentials("docker_password")
-        GITHUB_TOKEN1 = credentials("github_token1")
+        GITHUB_TOKEN = credentials("github_token1")
     }
 
     stages {
@@ -27,8 +27,7 @@ pipeline {
                 sh "docker push vfranci/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
 
                 sh "git tag ${env.IMAGE_TAG}"
-                sh "git push https://${GITHUB_TOKEN1_USR}:${GITHUB_TOKEN1_PSW}@github.com/${GITHUB_TOKEN1_USR}/service.git ${env.IMAGE_TAG}"
-
+                sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
             }
         }
         stage('Docker') {

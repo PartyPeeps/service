@@ -34,6 +34,15 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                sh """
+                    echo "${DOCKER_PASSWORD_PSW}" | docker login -u "${DOCKER_PASSWORD_USR}" --password-stdin
+                """
+            }
+        }
+
+
         stage('Test'){
             steps {
                 sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo"

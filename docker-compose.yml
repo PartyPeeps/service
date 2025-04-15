@@ -1,7 +1,7 @@
 services:
   hello:
-    image: hello-img
-    build: .
+    image: vfranci/hello-img:${IMAGE_TAG}
+    # build: .
     ports:
       - 8080:8080
       # Port for debug
@@ -27,6 +27,8 @@ services:
     profiles:
       - "hello-service"
     user: 0:0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   mongo:
     image: mongo:6.0.20
     restart: always

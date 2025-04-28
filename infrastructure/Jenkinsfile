@@ -17,6 +17,14 @@ pipeline {
             }
         }
 
+        stage('Docker Login') {
+            steps {
+                sh """
+                    echo "${DOCKER_CREDENTIALS_PSW}" | docker login -u "${DOCKER_CREDENTIALS_USR}" --password-stdin
+                """
+            }
+        }
+
         stage('Tag image') {
             steps {
                 script {
@@ -31,14 +39,6 @@ pipeline {
 
                 sh "git tag ${env.IMAGE_TAG}"
                 sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                sh """
-                    echo "${DOCKER_PASSWORD_PSW}" | docker login -u "${DOCKER_PASSWORD_USR}" --password-stdin
-                """
             }
         }
 

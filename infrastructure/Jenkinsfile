@@ -3,7 +3,7 @@ pipeline {
     tools {
         jdk 'jdk21' // This name must match the JDK installation name used in Jenkins Global Tool Configuration
     }
-     environment {
+    environment {
         DOCKER_PASSWORD = credentials("docker_password")
         GITHUB_TOKEN = credentials("github_token1")
     }
@@ -14,38 +14,39 @@ pipeline {
                 sh './gradlew clean build'
             }
         }
+
         stage('Tag image') {
-    steps {
-        script {
-            sh 'git fetch --tags'
+            steps {
+                script {
+                    sh 'git fetch --all --tags'
 
-            def latestTag = sh(script: 'git tag | sort --version-sort | tail -1', returnStdout: true).trim()
-            def (major, minor, patch) = latestTag.tokenize('.').collect { it.toInteger() }
+                    def latestTag = sh(script: 'git tag | sort --version-sort | tail -1', returnStdout: true).trim()
+                    def (major, minor, patch) = latestTag.tokenize('.').collect { it.toInteger() }
 
-            def newMinor = minor + 1
-            env.IMAGE_TAG = "${major}.${newMinor}.${patch}"
+                    def newMinor = minor + 1
+                    env.IMAGE_TAG = "${major}.${newMinor}.${patch}"
 
-            echo "New Image Tag: ${env.IMAGE_TAG}"
+                    echo "New Image Tag: ${env.IMAGE_TAG}"
+                }
+
+                sh "docker build -t vfranci/hello-img:${env.IMAGE_TAG} ."
+                sh "docker push vfranci/hello-img:${env.IMAGE_TAG}"
+
+                sh "git tag ${env.IMAGE_TAG}"
+                sh "git push https://${GITHUB_TOKEN}@github.com/PartyPeeps/service.git ${env.IMAGE_TAG}"
+            }
         }
-
-        sh "docker build -t vfranci/hello-img:${env.IMAGE_TAG} ."
-        sh "docker push vfranci/hello-img:${env.IMAGE_TAG}"
-
-        sh "git tag ${env.IMAGE_TAG}"
-        sh "git push https://${GITHUB_TOKEN}@github.com/PartyPeeps/service.git ${env.IMAGE_TAG}"
-    }
-}
 
         stage('Docker') {
             steps {
-                sh 'IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo'
+                sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo"
             }
         }
+
         stage('Integration tests') {
             steps {
                 sh './gradlew testIT'
             }
         }
     }
-    
 }

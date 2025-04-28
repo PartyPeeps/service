@@ -51,7 +51,7 @@ pipeline {
                 sh "docker push ${DOCKER_USERNAME}/hello-img:${IMAGE_TAG}"
 
                 sh "git tag ${IMAGE_TAG}"
-                sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_USERNAME}/service.git ${IMAGE_TAG}"
+                sh "git push https://$GITHUB_TOKEN@github.com/PartyPeeps/service.git ${env.IMAGE_TAG}"
             }
         }
 

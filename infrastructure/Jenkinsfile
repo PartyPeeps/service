@@ -37,18 +37,25 @@ pipeline {
             steps {
                 script {
                     sh('git fetch --tags')
-                    env.MAJOR_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 1', returnStdout: true).trim()
-                    env.MINOR_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 2', returnStdout: true).trim()
-                    env.PATCH_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 3', returnStdout: true).trim()
-                    env.IMAGE_TAG = "${MAJOR_VERSION}.$((MINOR_VERSION + 1)).${PATCH_VERSION}"
+                    def major = sh(script: "git tag | sort --version-sort | tail -1 | cut -d . -f 1", returnStdout: true).trim()
+                    def minor = sh(script: "git tag | sort --version-sort | tail -1 | cut -d . -f 2", returnStdout: true).trim()
+                    def patch = sh(script: "git tag | sort --version-sort | tail -1 | cut -d . -f 3", returnStdout: true).trim()
+
+                    def minorNext = (minor as Integer) + 1
+
+                    env.MAJOR_VERSION = major
+                    env.MINOR_VERSION = minorNext.toString()
+                    env.PATCH_VERSION = patch
+                    env.IMAGE_TAG = "${major}.${minorNext}.${patch}"
                 }
                 sh "docker build -t ${DOCKER_USERNAME}/hello-img:${IMAGE_TAG} ."
                 sh "docker push ${DOCKER_USERNAME}/hello-img:${IMAGE_TAG}"
 
                 sh "git tag ${IMAGE_TAG}"
-                sh "git push https://${GITHUB_TOKEN}@github.com/PartyPeeps/service.git ${IMAGE_TAG}"
+                sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_USERNAME}/service.git ${IMAGE_TAG}"
             }
         }
+
 
         stage('Test') {
             steps {

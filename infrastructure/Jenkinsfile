@@ -2,14 +2,13 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk21' // This name must match the JDK installation name used in Jenkins Global Tool Configuration
+        jdk 'jdk21'
     }
 
     environment {
-        DOCKER_CREDENTIALS = credentials('docker_password')
-        GITHUB_TOKEN = credentials('github_token')
+        DOCKER_CREDENTIALS = credentials("docker_password") // aici username:password
+        GITHUB_TOKEN = credentials("github_token")
     }
-
 
     stages {
         stage('Build & Test') {
@@ -20,31 +19,38 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                sh """
-                    echo "${DOCKER_CREDENTIALS_PSW}" | docker login -u "${DOCKER_CREDENTIALS_USR}" --password-stdin
-                """
+                script {
+                    def parts = DOCKER_CREDENTIALS.split('/')
+                    def username = parts[0]
+                    def password = parts[1]
+
+                    sh """
+                        echo "${password}" | docker login -u "${username}" --password-stdin
+                    """
+
+                    env.DOCKER_USERNAME = username
+                }
             }
         }
 
         stage('Tag image') {
             steps {
                 script {
-                    sh([script: 'git fetch --tag', returnStdout: true]).trim()
-                    env.MAJOR_VERSION = sh([script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 1', returnStdout: true]).trim()
-                    env.MINOR_VERSION = sh([script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 2', returnStdout: true]).trim()
-                    env.PATCH_VERSION = sh([script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 3', returnStdout: true]).trim()
-                    env.IMAGE_TAG = "${env.MAJOR_VERSION}.\$((${env.MINOR_VERSION} + 1)).${env.PATCH_VERSION}"
+                    sh('git fetch --tags')
+                    env.MAJOR_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 1', returnStdout: true).trim()
+                    env.MINOR_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 2', returnStdout: true).trim()
+                    env.PATCH_VERSION = sh(script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 3', returnStdout: true).trim()
+                    env.IMAGE_TAG = "${MAJOR_VERSION}.$((MINOR_VERSION + 1)).${PATCH_VERSION}"
                 }
-                sh "docker build -t lemnaruamedeea/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
-                sh "docker push lemnaruamedeea/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION}"
+                sh "docker build -t ${DOCKER_USERNAME}/hello-img:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_USERNAME}/hello-img:${IMAGE_TAG}"
 
-                sh "git tag ${env.IMAGE_TAG}"
-                sh "git push https://${GITHUB_TOKEN}@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
+                sh "git tag ${IMAGE_TAG}"
+                sh "git push https://${GITHUB_TOKEN}@github.com/PartyPeeps/service.git ${IMAGE_TAG}"
             }
         }
 
-
-        stage('Test'){
+        stage('Test') {
             steps {
                 sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo"
             }

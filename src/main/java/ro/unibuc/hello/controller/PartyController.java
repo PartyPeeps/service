@@ -1,6 +1,8 @@
 package ro.unibuc.hello.controller;
 import io.micrometer.core.annotation.Timed;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.micrometer.core.instrument.Timer;
 import org.springframework.http.ResponseEntity;
@@ -457,4 +459,15 @@ public class PartyController {
         PartyEntity updatedParty = partyService.removeFoodFromParty(partyId, foodId);
         return updatedParty != null ? ResponseEntity.ok(updatedParty) : ResponseEntity.notFound().build();
     }
+
+    @RestController
+    public class TestController {
+
+    @GetMapping("/fail")
+    public String fail() {
+        throw new RuntimeException("Intentional failure for testing alert!");
+    }
+
+}
+
 }

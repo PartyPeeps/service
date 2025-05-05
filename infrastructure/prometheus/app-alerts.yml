@@ -29,10 +29,11 @@ groups:
           description: "The monitored instance is not responding"
 
       - alert: HighErrorRate
-        expr: rate(http_server_requests_seconds_count{status=~"5.."}[1m]) > 0.05
-        for: 1m
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[1m]) > 0.00001  # modificare
+        for: 10s
         labels:
           severity: warning
         annotations:
           summary: "High rate of 5xx errors"
-          description: "More than 5% of requests are failing with 5xx errors"
+          description: "More than 0.001% of requests are failing with 5xx errors"
+

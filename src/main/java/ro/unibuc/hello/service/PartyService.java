@@ -2,6 +2,8 @@ package ro.unibuc.hello.service;
 
 import org.springframework.stereotype.Service;
 
+import io.micrometer.core.instrument.MeterRegistry;  // <-- adăugat
+import io.micrometer.core.instrument.Counter;
 import ro.unibuc.hello.data.FoodEntity;
 import ro.unibuc.hello.data.LocationEntity;
 
@@ -31,14 +33,33 @@ public class PartyService {
     private final TaskRepository taskRepository;
     private final FoodRepository foodRepository;
     private final LocationRepository locationRepository;
+    private final MeterRegistry meterRegistry;
+
+    // Metrice
+    private final Counter foodAddedCounter;
+    private final Counter foodRemovedCounter;
+    private final Counter locationSetCounter;
+    private final Counter locationRemovedCounter;
+    private final Counter foodFilterCounter;
+    private final Counter locationFilterCounter;
 
     // Constructor pentru injectarea dependențelor
-    public PartyService(PartyRepository partyRepository, UserRepository userRepository, TaskRepository taskRepository, FoodRepository foodRepository, LocationRepository locationRepository) {
+    public PartyService(PartyRepository partyRepository, UserRepository userRepository, TaskRepository taskRepository,
+                        FoodRepository foodRepository, LocationRepository locationRepository, MeterRegistry meterRegistry) {
         this.partyRepository = partyRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.foodRepository = foodRepository;
         this.locationRepository = locationRepository;
+        this.meterRegistry = meterRegistry;
+
+        // Inițializare metrice
+        this.foodAddedCounter = meterRegistry.counter("party.food.added");
+        this.foodRemovedCounter = meterRegistry.counter("party.food.removed");
+        this.locationSetCounter = meterRegistry.counter("party.location.set");
+        this.locationRemovedCounter = meterRegistry.counter("party.location.removed");
+        this.foodFilterCounter = meterRegistry.counter("party.food.filtered");
+        this.locationFilterCounter = meterRegistry.counter("party.location.filtered");
     }
 
     public PartyEntity addUserToParty(String partyId, String userId) {
@@ -119,48 +140,40 @@ public class PartyService {
         int partyPoints = party.getPartyPoints();
 
         for (FoodEntity food : foods) {
-            double discountedPrice = (partyPoints >= food.getDiscountPointsRequired()) 
-                ? food.getPrice() * 0.85  
-                : food.getPrice();
-    
-            food.setDiscountedPrice(discountedPrice); // Setăm prețul redus în obiect
+            double discountedPrice = (partyPoints >= food.getDiscountPointsRequired())
+                    ? food.getPrice() * 0.85
+                    : food.getPrice();
+            food.setDiscountedPrice(discountedPrice);
         }
-    
+
+        if (minRating != null || maxPrice != null || maxPoints != null) {
+            foodFilterCounter.increment(); // Increment metrică
+        }
+
         if (minRating != null) {
-            foods = foods.stream()
-                    .filter(food -> food.getRating() >= minRating)
-                    .toList();
+            foods = foods.stream().filter(food -> food.getRating() >= minRating).toList();
         }
         if (maxPrice != null) {
-            foods = foods.stream()
-                    .filter(food -> food.getDiscountedPrice() <= maxPrice)
-                    .toList();
+            foods = foods.stream().filter(food -> food.getDiscountedPrice() <= maxPrice).toList();
         }
         if (maxPoints != null) {
-            foods = foods.stream()
-                    .filter(food -> food.getDiscountPointsRequired() <= maxPoints)
-                    .toList();
+            foods = foods.stream().filter(food -> food.getDiscountPointsRequired() <= maxPoints).toList();
         }
-    
+
         return foods;
     }
 
     public PartyEntity addFoodToParty(String partyId, String foodId) {
-  
         Optional<PartyEntity> party = partyRepository.findById(partyId);
-        if (party.isEmpty()) {
-            throw new RuntimeException("Party not found");
-        }
-    
-        Optional<FoodEntity> food = foodRepository.findById(foodId);
-        if (food.isEmpty()) {
-            throw new RuntimeException("Food not found");
-        }
-    
-        // Logica de adăugare a alimentului la petrecere
-        party.get().getFoodIds().add(foodId);
-        return partyRepository.save(party.get());
+        if (party.isEmpty()) throw new RuntimeException("Party not found");
 
+        Optional<FoodEntity> food = foodRepository.findById(foodId);
+        if (food.isEmpty()) throw new RuntimeException("Food not found");
+
+        party.get().getFoodIds().add(foodId);
+        foodAddedCounter.increment(); // Increment metrică
+
+        return partyRepository.save(party.get());
     }
     
 
@@ -170,29 +183,26 @@ public class PartyService {
         List<LocationEntity> locations = locationRepository.findAll();
 
         for (LocationEntity location : locations) {
-            double discountedPrice = (partyPoints >= location.getDiscountPointsRequired()) 
-                ? location.getPrice() * 0.85  
-                : location.getPrice();
-    
-            location.setDiscountedPrice(discountedPrice); // Setăm prețul redus în obiect
+            double discountedPrice = (partyPoints >= location.getDiscountPointsRequired())
+                    ? location.getPrice() * 0.85
+                    : location.getPrice();
+            location.setDiscountedPrice(discountedPrice);
         }
-    
+
+        if (minRating != null || maxPrice != null || maxPoints != null) {
+            locationFilterCounter.increment(); // Increment metrică
+        }
+
         if (minRating != null) {
-            locations = locations.stream()
-                    .filter(location -> location.getRating() >= minRating)
-                    .toList();
+            locations = locations.stream().filter(location -> location.getRating() >= minRating).toList();
         }
         if (maxPrice != null) {
-            locations = locations.stream()
-                    .filter(location -> location.getDiscountedPrice() <= maxPrice)
-                    .toList();
+            locations = locations.stream().filter(location -> location.getDiscountedPrice() <= maxPrice).toList();
         }
         if (maxPoints != null) {
-            locations = locations.stream()
-                    .filter(location -> location.getDiscountPointsRequired() <= maxPoints)
-                    .toList();
+            locations = locations.stream().filter(location -> location.getDiscountPointsRequired() <= maxPoints).toList();
         }
-    
+
         return locations;
     }    
 
@@ -200,34 +210,36 @@ public class PartyService {
         PartyEntity party = partyRepository.findById(partyId)
                 .orElseThrow(() -> new RuntimeException("Party not found"));
         if (party.getLocationId() != null && party.getLocationId().equals(locationId)) {
-            System.out.println("Location is already set for this party.");
-            return party; // Returnează petrecerea fără modificări
+            return party;
         }
-        LocationEntity location = locationRepository.findById(locationId)
+        locationRepository.findById(locationId)
                 .orElseThrow(() -> new RuntimeException("Location not found"));
+
         party.setLocationId(locationId);
+        locationSetCounter.increment(); // Increment metrică
+
         return partyRepository.save(party);
     }
     
 
-public PartyEntity removeLocationFromParty(String partyId) {
-    Optional<PartyEntity> partyOpt = partyRepository.findById(partyId);
-    if (partyOpt.isPresent()) {
-        PartyEntity party = partyOpt.get();
-        party.setLocationId(null);  // Șterge locația
-        return partyRepository.save(party);
+    public PartyEntity removeLocationFromParty(String partyId) {
+        Optional<PartyEntity> partyOpt = partyRepository.findById(partyId);
+        if (partyOpt.isPresent()) {
+            PartyEntity party = partyOpt.get();
+            party.setLocationId(null);
+            locationRemovedCounter.increment(); // Increment metrică
+            return partyRepository.save(party);
+        }
+        return null;
     }
-    return null;
-}
 
     public PartyEntity removeFoodFromParty(String partyId, String foodId) {
         Optional<PartyEntity> party = partyRepository.findById(partyId);
-        if (party.isEmpty()) {
-            throw new RuntimeException("Party not found");
-        }
+        if (party.isEmpty()) throw new RuntimeException("Party not found");
 
-        // Logica de eliminare a alimentului
         party.get().getFoodIds().remove(foodId);
+        foodRemovedCounter.increment(); // Increment metrică
+
         return partyRepository.save(party.get());
     }
 

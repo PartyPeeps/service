@@ -1,9 +1,12 @@
-package test.java.ro.unibuc.hello.service;
+package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import ro.unibuc.hello.data.FoodEntity;
@@ -42,6 +45,9 @@ public class PartyServiceTest {
 
     @Mock
     private LocationRepository locationRepository;
+
+    @Mock
+    private MeterRegistry meterRegistry;
 
     @InjectMocks
     private PartyService partyService;

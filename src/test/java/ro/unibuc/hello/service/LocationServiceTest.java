@@ -1,23 +1,37 @@
 package ro.unibuc.hello.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import ro.unibuc.hello.data.LocationEntity;
 import ro.unibuc.hello.data.PartyEntity;
+import ro.unibuc.hello.repositories.FoodRepository;
 import ro.unibuc.hello.repositories.LocationRepository;
 import ro.unibuc.hello.repositories.PartyRepository;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LocationServiceTest {
 
     @Mock
@@ -25,6 +39,22 @@ class LocationServiceTest {
 
     @Mock
     private LocationRepository locationRepository;
+
+    @Mock
+    private FoodRepository foodRepository;
+
+    @Mock
+    private Counter locationSetCounter;
+
+    @Mock
+    private Counter locationRemovedCounter;
+
+    @Mock
+    private Counter locationFilterCounter;
+
+    @Mock
+    private MeterRegistry meterRegistry;
+
 
     @InjectMocks
     private PartyService partyService;
@@ -46,6 +76,16 @@ class LocationServiceTest {
 
         location2 = new LocationEntity("Lounge Y", "456 Side St", 150, 4.0, 120);
         location2.setId("loc2");
+
+        // Inițializăm Counters din MeterRegistry
+        when(meterRegistry.counter("party.location.set")).thenReturn(locationSetCounter);
+        when(meterRegistry.counter("party.location.removed")).thenReturn(locationRemovedCounter);
+        when(meterRegistry.counter("party.location.filtered")).thenReturn(locationFilterCounter);
+
+
+        // Creăm explicit service-ul cu toți parametrii
+        partyService = new PartyService(partyRepository, null, null, foodRepository, locationRepository, meterRegistry);
+
     }
 
     @Test

@@ -9,6 +9,8 @@ import ro.unibuc.hello.repositories.PartyRepository;
 import ro.unibuc.hello.repositories.UserRepository;
 import ro.unibuc.hello.data.UserWithPartiesResponse;
 import ro.unibuc.hello.dto.PartySummaryDTO;
+import io.micrometer.core.annotation.Timed;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;

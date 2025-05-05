@@ -2,9 +2,9 @@ package ro.unibuc.hello.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+
+import io.micrometer.core.annotation.Timed;
+
 
 import ro.unibuc.hello.dto.Greeting;
 import ro.unibuc.hello.exception.EntityNotFoundException;
@@ -19,6 +19,7 @@ public class GreetingsController {
     @Autowired
     private GreetingsService greetingsService;
 
+    @Timed(value = "app_response_time", description = "Time taken to return hello")
     @GetMapping("/hello-world")
     @ResponseBody
     public Greeting sayHello(@RequestParam(name="name", required=false, defaultValue="Stranger") String name) {

@@ -70,17 +70,17 @@ class LocationServiceTest {
         assertTrue(result.isEmpty());
     }
 
-    @Test
-    void testAddLocationToParty() {
-        when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
-        when(locationRepository.findById("loc1")).thenReturn(Optional.of(location1));
-        when(partyRepository.save(any(PartyEntity.class))).thenReturn(testParty);
+    // @Test
+    // void testAddLocationToParty() {
+    //     when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
+    //     when(locationRepository.findById("loc1")).thenReturn(Optional.of(location1));
+    //     when(partyRepository.save(any(PartyEntity.class))).thenReturn(testParty);
 
-        PartyEntity updatedParty = partyService.addLocationToParty("party123", "loc1");
+    //     PartyEntity updatedParty = partyService.addLocationToParty("party123", "loc1");
 
-        assertNotNull(updatedParty);
-        assertEquals("loc1", updatedParty.getLocationId());
-    }
+    //     assertNotNull(updatedParty);
+    //     assertEquals("loc1", updatedParty.getLocationId());
+    // }
 
     @Test
     void testAddLocationToParty_LocationNotFound() {

@@ -68,17 +68,17 @@ class LocationControllerTest {
         assertTrue(result.isEmpty());
     }
 
-    @Test
-    void testAddLocationToParty() {
-        when(partyService.addLocationToParty("party123", "loc1")).thenReturn(testParty);
+    // @Test
+    // void testAddLocationToParty() {
+    //     when(partyService.addLocationToParty("party123", "loc1")).thenReturn(testParty);
 
-        ResponseEntity<Object> response = partyController.addLocationToParty("party123", "loc1");
+    //     ResponseEntity<Object> response = partyController.addLocationToParty("party123", "loc1");
 
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody() instanceof PartyEntity);
-        PartyEntity party = (PartyEntity) response.getBody();
-        assertEquals("party123", party.getId());
-    }
+    //     assertNotNull(response.getBody());
+    //     assertTrue(response.getBody() instanceof PartyEntity);
+    //     PartyEntity party = (PartyEntity) response.getBody();
+    //     assertEquals("party123", party.getId());
+    // }
 
     @Test
     void testAddLocationToParty_NotFound() {

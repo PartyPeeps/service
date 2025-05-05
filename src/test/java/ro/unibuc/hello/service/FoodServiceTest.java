@@ -1,46 +1,59 @@
 package ro.unibuc.hello.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import ro.unibuc.hello.data.FoodEntity;
-import ro.unibuc.hello.data.PartyEntity;
-import ro.unibuc.hello.repositories.FoodRepository;
-import ro.unibuc.hello.repositories.PartyRepository;
-import ro.unibuc.hello.service.PartyService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import ro.unibuc.hello.data.FoodEntity;
+import ro.unibuc.hello.data.PartyEntity;
+import ro.unibuc.hello.repositories.FoodRepository;
+import ro.unibuc.hello.repositories.PartyRepository;
 
 @ExtendWith(MockitoExtension.class)
 class FoodServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
-
     @Mock
     private FoodRepository foodRepository;
-
-    @InjectMocks
+    
+    private MeterRegistry meterRegistry;
     private PartyService partyService;
-
     private PartyEntity party;
-    private FoodEntity food1, food2;
+    private FoodEntity food1;
+    private FoodEntity food2;
 
     @BeforeEach
     void setUp() {
+        meterRegistry = new SimpleMeterRegistry();
+        partyService = new PartyService(
+            partyRepository,
+            null, // userRepository
+            null, // taskRepository
+            foodRepository,
+            null, // locationRepository
+            meterRegistry
+        );
+        
+        // Initialize test data
         party = new PartyEntity("Test Party", "2025-03-24");
         party.setId("party123");
         party.setPartyPoints(100);
+        party.setFoodIds(new ArrayList<>());
 
         food1 = new FoodEntity("Pizza", 30.0, 4.5, 80);
         food1.setId("food1");
@@ -82,6 +95,8 @@ class FoodServiceTest {
 
         assertNotNull(updatedParty);
         assertTrue(updatedParty.getFoodIds().contains("food1"));
+        // Verify food added metric
+        assertEquals(1, meterRegistry.counter("party.food.added").count());
     }
 
     @Test
@@ -89,11 +104,12 @@ class FoodServiceTest {
         when(partyRepository.findById("party123")).thenReturn(Optional.of(party));
         when(foodRepository.findById("food1")).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        assertThrows(RuntimeException.class, () -> 
             partyService.addFoodToParty("party123", "food1")
         );
-
-        assertEquals("Food not found", exception.getMessage());
+        
+        // Should NOT increment food removed counter
+        assertEquals(0, meterRegistry.counter("party.food.removed").count());
     }
 
 
@@ -107,6 +123,8 @@ class FoodServiceTest {
 
         assertNotNull(updatedParty);
         assertFalse(updatedParty.getFoodIds().contains("food1"));
+        // Verify food removed metric
+        assertEquals(1, meterRegistry.counter("party.food.removed").count());
     }
 
     

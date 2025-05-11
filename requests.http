@@ -92,13 +92,13 @@ GET http://localhost:8080/parties/{id}/foods?maxPoints={{maxPoints}}
 ### Adaugă un produs alimentar la o petrecere
 # @prompt partyId Introdu ID-ul petrecerii
 # @prompt foodId Introdu ID-ul produsului alimentar
-POST http://localhost:8080/parties/{{partyId}}/foods/{{foodId}}
+PUT http://localhost:8080/parties/{{partyId}}/foods/{{foodId}}
 Content-Type: application/json
 
 ### Adaugă un produs alimentar la o petrecere
 # @prompt partyId Introdu ID-ul petrecerii
 # @prompt locationId Introdu ID-ul produsului alimentar
-POST http://localhost:8080/parties/{{partyId}}/location/{{locationId}}
+PUT http://localhost:8080/parties/{{partyId}}/location/{{locationId}}
 Content-Type: application/json
 
 ### Get all tasks for a party
@@ -108,6 +108,38 @@ GET http://localhost:8080/parties/{{partyId}}/tasks
 ### Get task by ID
 # @prompt taskId Task ID to get details for
 GET http://localhost:8080/tasks/{{taskId}}
+
+### Get all tasks assigned to a user
+# @prompt userId User ID to get the tasks for
+GET http://localhost:8080/tasks/user/{{userId}}
+
+### Create a new task
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "name": "New Task",
+  "description": "This is a new task",
+  "points": 15,
+  "partyId": [],
+  "assignedUserId": [],
+  "completed": false
+}
+
+### Update an existing task
+# @prompt taskId Task ID to update
+PUT http://localhost:8080/tasks/{{taskId}}
+Content-Type: application/json
+
+{
+  "id": "{{taskId}}",
+  "name": "Updated Task",
+  "description": "Updated description",
+  "points": 20,
+  "partyId": [],
+  "assignedUserId": [],
+  "completed": true
+}
 
 ### Delete a task
 # @prompt taskId Task ID to delete

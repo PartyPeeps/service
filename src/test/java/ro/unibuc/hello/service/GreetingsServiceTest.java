@@ -1,10 +1,13 @@
 package ro.unibuc.hello.service;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -16,6 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -23,6 +28,9 @@ class GreetingsServiceTest {
 
     @Mock
     private InformationRepository informationRepository;
+
+    @Mock
+    private MeterRegistry metricsRegistry;
 
     @InjectMocks
     private GreetingsService greetingsService = new GreetingsService();
@@ -36,7 +44,10 @@ class GreetingsServiceTest {
     void testHello() {
         // Arrange
         String name = "John";
-
+        Counter counterMock = Mockito.mock(Counter.class);
+        when(metricsRegistry.counter(anyString(), anyString(), anyString())).thenReturn(counterMock);
+        doNothing().when(counterMock).increment();
+        
         // Act
         Greeting greeting = greetingsService.hello(name);
 

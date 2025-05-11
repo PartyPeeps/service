@@ -18,3 +18,50 @@ groups:
         annotations:
           summary: Increased info retrieval rate {{ $labels.value}} {{ $value }}
           description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance is down"
+          description: "The monitored instance is not responding"
+
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[1m]) > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of 5xx errors"
+          description: "More than 5% of requests are failing with 5xx errors"
+
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[1m]) > 0.1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 10% for more than 30 seconds."
+
+      - alert: CPUOverZero
+        expr: rate(process_cpu_seconds_total[1m]) > 0.001
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU usage detected"
+          description: "Even minimal CPU usage was detected: >0.001 over 1 minute."
+
+      - alert: FoodWasAdded
+        expr: food_added_total > 0
+        for: 1s
+        labels:
+          severity: info
+        annotations:
+          summary: "Food was added"
+          description: "At least one food item has been added."
+
+

@@ -21,6 +21,11 @@ public class UserEntity {
         this.points = 0; // Default to 0 points
     }
 
+    public UserEntity(String name) {
+        this.name = name;
+        
+    }
+
      public String getId() {
         return id;
     }

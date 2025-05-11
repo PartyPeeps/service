@@ -24,6 +24,11 @@ import java.util.ArrayList;  // Importă pentru a inițializa lista dacă e null
 import java.util.List;
 import java.util.Optional;
 
+// Add these imports at the top
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+
 @Service
 public class PartyService {
 
@@ -33,48 +38,74 @@ public class PartyService {
     private final TaskRepository taskRepository;
     private final FoodRepository foodRepository;
     private final LocationRepository locationRepository;
-    private final MeterRegistry meterRegistry;
 
-    // Metrice
+    // Metrics
+    private final Counter addUserCounter;
+    private final Counter taskCompletionCounter;
     private final Counter foodAddedCounter;
     private final Counter foodRemovedCounter;
     private final Counter locationSetCounter;
+    private final Timer partyCreationTimer;
+    private final MeterRegistry meterRegistry;
     private final Counter locationRemovedCounter;
     private final Counter foodFilterCounter;
     private final Counter locationFilterCounter;
 
-    // Constructor pentru injectarea dependențelor
-    public PartyService(PartyRepository partyRepository, UserRepository userRepository, TaskRepository taskRepository,
-                        FoodRepository foodRepository, LocationRepository locationRepository, MeterRegistry meterRegistry) {
+    public PartyService(PartyRepository partyRepository,
+                      UserRepository userRepository,
+                      TaskRepository taskRepository,
+                      FoodRepository foodRepository,
+                      LocationRepository locationRepository,
+                      MeterRegistry registry) {
         this.partyRepository = partyRepository;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.foodRepository = foodRepository;
         this.locationRepository = locationRepository;
-        this.meterRegistry = meterRegistry;
 
-        // Inițializare metrice
-        this.foodAddedCounter = meterRegistry.counter("party.food.added");
-        this.foodRemovedCounter = meterRegistry.counter("party.food.removed");
-        this.locationSetCounter = meterRegistry.counter("party.location.set");
-        this.locationRemovedCounter = meterRegistry.counter("party.location.removed");
+        // Initialize metrics
+        this.addUserCounter = Counter.builder("party.users.added")
+            .description("Total users added to parties")
+            .register(registry);
+
+        this.taskCompletionCounter = Counter.builder("party.tasks.completed")
+            .description("Total tasks completed")
+            .register(registry);
+
+        this.foodAddedCounter = Counter.builder("party.food.added")
+            .description("Total food items added to parties")
+            .register(registry);
+
+        this.foodRemovedCounter = Counter.builder("party.food.removed")
+            .description("Total food items removed from parties")
+            .register(registry);
+
+        this.locationSetCounter = Counter.builder("party.locations.set")
+            .description("Total location changes")
+            .register(registry);
+
+        this.partyCreationTimer = Timer.builder("party.creation.time")
+            .description("Time taken to create a party")
+            .register(registry);
+        
         this.foodFilterCounter = meterRegistry.counter("party.food.filtered");
         this.locationFilterCounter = meterRegistry.counter("party.location.filtered");
-    }
+        this.locationRemovedCounter = meterRegistry.counter("party.location.removed");
 
+}
+    // Modified methods with metrics
     public PartyEntity addUserToParty(String partyId, String userId) {
         PartyEntity party = partyRepository.findById(partyId).orElse(null);
         
         if (party != null) {
-            // Verificăm dacă lista `userIds` este null și o inițializăm
             if (party.getUserIds() == null) {
                 party.setUserIds(new ArrayList<>());
             }
     
-            // Adăugăm utilizatorul doar dacă nu este deja în listă
             if (!party.getUserIds().contains(userId)) {
                 party.getUserIds().add(userId);
-                return partyRepository.save(party);  // Salvăm petrecerea actualizată
+                addUserCounter.increment(); // METRIC
+                return partyRepository.save(party);
             }
         }
         return null;
@@ -82,17 +113,13 @@ public class PartyService {
     
 
     public PartyEntity updatePartyPointsAfterTaskCompletion(String partyId, String userId, String taskId) {
-        // Căutăm petrecerea
         PartyEntity partyEntity = partyRepository.findById(partyId).orElse(null);
     
-        // Verificăm dacă petrecerea există
         if (partyEntity != null) {
-            // Căutăm taskul completat
             TaskEntity taskEntity = taskRepository.findById(taskId).orElse(null);
     
-            // Verificăm dacă taskul există și este completat
             if (taskEntity != null && taskEntity.isCompleted()) {
-                // Adăugăm punctele taskului la petrecerea respectivă
+                taskCompletionCounter.increment(); // METRIC
                 int taskPoints = taskEntity.getPoints();
                 partyEntity.setPartyPoints(partyEntity.getPartyPoints() + taskPoints);
     
@@ -131,7 +158,9 @@ public class PartyService {
     }
 
     public PartyEntity createParty(PartyEntity party) {
-        return partyRepository.save(party);
+        return partyCreationTimer.record(() -> {
+            return partyRepository.save(party);
+        });
     }
 
     public List<FoodEntity> getAvailableFoodsForParty(String partyId, Double minRating, Double maxPrice, Integer maxPoints) {
@@ -171,7 +200,8 @@ public class PartyService {
         if (food.isEmpty()) throw new RuntimeException("Food not found");
 
         party.get().getFoodIds().add(foodId);
-        foodAddedCounter.increment(); // Increment metrică
+
+        foodAddedCounter.increment(); // METRIC
 
         return partyRepository.save(party.get());
     }
@@ -216,6 +246,7 @@ public class PartyService {
                 .orElseThrow(() -> new RuntimeException("Location not found"));
 
         party.setLocationId(locationId);
+
         locationSetCounter.increment(); // Increment metrică
 
         return partyRepository.save(party);
@@ -238,7 +269,8 @@ public class PartyService {
         if (party.isEmpty()) throw new RuntimeException("Party not found");
 
         party.get().getFoodIds().remove(foodId);
-        foodRemovedCounter.increment(); // Increment metrică
+
+        foodRemovedCounter.increment(); // METRIC
 
         return partyRepository.save(party.get());
     }

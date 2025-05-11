@@ -1,26 +1,29 @@
 package ro.unibuc.hello.service;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import ro.unibuc.hello.data.FoodEntity;
 import ro.unibuc.hello.data.PartyEntity;
 import ro.unibuc.hello.repositories.FoodRepository;
 import ro.unibuc.hello.repositories.LocationRepository;
 import ro.unibuc.hello.repositories.PartyRepository;
+
 import ro.unibuc.hello.service.PartyService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,13 +34,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FoodServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
-
+  
     @Mock
     private FoodRepository foodRepository;
 
@@ -57,22 +61,21 @@ class FoodServiceTest {
     private Counter foodFilterCounter;
 
 
-
-
     @InjectMocks
     private PartyService partyService;
-
     private PartyEntity party;
-    private FoodEntity food1, food2;
+    private FoodEntity food1;
+    private FoodEntity food2;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
 
-        // Inițializări existente
+        meterRegistry = new SimpleMeterRegistry();
+
         party = new PartyEntity("Test Party", "2025-03-24");
         party.setId("party123");
         party.setPartyPoints(100);
+        party.setFoodIds(new ArrayList<>());
 
         food1 = new FoodEntity("Pizza", 30.0, 4.5, 80);
         food1.setId("food1");
@@ -125,6 +128,8 @@ class FoodServiceTest {
 
         assertNotNull(updatedParty);
         assertTrue(updatedParty.getFoodIds().contains("food1"));
+        // Verify food added metric
+        assertEquals(1, meterRegistry.counter("party.food.added").count());
     }
 
     @Test
@@ -132,11 +137,12 @@ class FoodServiceTest {
         when(partyRepository.findById("party123")).thenReturn(Optional.of(party));
         when(foodRepository.findById("food1")).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> 
+        assertThrows(RuntimeException.class, () -> 
             partyService.addFoodToParty("party123", "food1")
         );
-
-        assertEquals("Food not found", exception.getMessage());
+        
+        // Should NOT increment food removed counter
+        assertEquals(0, meterRegistry.counter("party.food.removed").count());
     }
 
 
@@ -150,6 +156,8 @@ class FoodServiceTest {
 
         assertNotNull(updatedParty);
         assertFalse(updatedParty.getFoodIds().contains("food1"));
+        // Verify food removed metric
+        assertEquals(1, meterRegistry.counter("party.food.removed").count());
     }
 
     

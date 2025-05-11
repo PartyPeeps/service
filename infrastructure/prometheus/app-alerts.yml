@@ -37,6 +37,15 @@ groups:
           summary: "High rate of 5xx errors"
           description: "More than 5% of requests are failing with 5xx errors"
 
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 99  # Fires if available memory < 99% (triggers easily)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Available memory is only {{ $value | humanize }}% (threshold: 99%)"
+
       - alert: HighCPUUsage
         expr: rate(process_cpu_seconds_total[1m]) > 0.1
         for: 30s
@@ -63,5 +72,3 @@ groups:
         annotations:
           summary: "Food was added"
           description: "At least one food item has been added."
-
-

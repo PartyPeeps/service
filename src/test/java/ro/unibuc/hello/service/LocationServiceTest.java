@@ -2,12 +2,18 @@ package ro.unibuc.hello.service;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -19,6 +25,7 @@ import ro.unibuc.hello.data.PartyEntity;
 import ro.unibuc.hello.repositories.FoodRepository;
 import ro.unibuc.hello.repositories.LocationRepository;
 import ro.unibuc.hello.repositories.PartyRepository;
+import ro.unibuc.hello.repositories.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,9 +43,13 @@ class LocationServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
-
     @Mock
     private LocationRepository locationRepository;
+
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private TaskRepository taskRepository;
 
     @Mock
     private FoodRepository foodRepository;
@@ -58,18 +69,26 @@ class LocationServiceTest {
 
     @InjectMocks
     private PartyService partyService;
-
     private PartyEntity testParty;
     private LocationEntity location1;
     private LocationEntity location2;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        meterRegistry = new SimpleMeterRegistry();
+        partyService = new PartyService(
+            partyRepository,
+            userRepository,
+            taskRepository,
+            foodRepository,
+            locationRepository,
+            meterRegistry
+        );
 
         testParty = new PartyEntity("Birthday Bash", "2025-05-15");
         testParty.setId("party123");
         testParty.setPartyPoints(100);
+        testParty.setLocationId(null);
 
         location1 = new LocationEntity("Club X", "123 Main St", 200, 4.5, 50);
         location1.setId("loc1");
@@ -112,52 +131,52 @@ class LocationServiceTest {
 
     @Test
     void testAddLocationToParty() {
+        // Setup EXACTLY what this test needs
         when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
         when(locationRepository.findById("loc1")).thenReturn(Optional.of(location1));
-        when(partyRepository.save(any(PartyEntity.class))).thenReturn(testParty);
+        when(partyRepository.save(any())).thenReturn(testParty);
 
-        PartyEntity updatedParty = partyService.addLocationToParty("party123", "loc1");
-
-        assertNotNull(updatedParty);
-        assertEquals("loc1", updatedParty.getLocationId());
+        PartyEntity result = partyService.addLocationToParty("party123", "loc1");
+        
+        assertNotNull(result);
+        assertEquals("loc1", result.getLocationId());
+        assertEquals(1, meterRegistry.counter("party.locations.changed").count());
     }
 
     @Test
     void testAddLocationToParty_LocationNotFound() {
+        // Only setup what this test needs
         when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
         when(locationRepository.findById("loc1")).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> partyService.addLocationToParty("party123", "loc1"));
+        assertThrows(RuntimeException.class, () -> 
+            partyService.addLocationToParty("party123", "loc1")
+        );
     }
 
     @Test
     void testAddLocationToParty_LocationAlreadyAdded() {
-        // Setează locația deja adăugată
         testParty.setLocationId("loc1");
-
-        // Setup mock-uri pentru repo-uri
+        // Only setup what this test needs
         when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
-        when(locationRepository.findById("loc1")).thenReturn(Optional.of(location1));
 
-        // Apelăm metoda și verificăm că nu a fost modificată locația
-        PartyEntity updatedParty = partyService.addLocationToParty("party123", "loc1");
-
-        assertNotNull(updatedParty);  // Verificăm că party este valid
-        assertEquals("loc1", updatedParty.getLocationId());  // Verificăm că locația este corectă
-
-        // Verificăm că metoda save nu a fost invocată
-        verify(partyRepository, times(0)).save(any(PartyEntity.class)); 
+        PartyEntity result = partyService.addLocationToParty("party123", "loc1");
+        
+        assertNotNull(result);
+        assertEquals("loc1", result.getLocationId());
+        verify(partyRepository, never()).save(any());
     }
 
     @Test
     void testRemoveLocationFromParty() {
         testParty.setLocationId("loc1");
         when(partyRepository.findById("party123")).thenReturn(Optional.of(testParty));
-        when(partyRepository.save(any(PartyEntity.class))).thenReturn(testParty);
+        when(partyRepository.save(any())).thenReturn(testParty);
 
-        PartyEntity updatedParty = partyService.removeLocationFromParty("party123");
-
-        assertNotNull(updatedParty);
-        assertNull(updatedParty.getLocationId());
+        PartyEntity result = partyService.removeLocationFromParty("party123");
+        
+        assertNotNull(result);
+        assertNull(result.getLocationId());
     }
+
 }

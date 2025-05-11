@@ -1,26 +1,8 @@
-package ro.unibuc.hello.service;
+package test.java.ro.unibuc.hello.service;
 
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.any;
-import org.mockito.MockitoAnnotations;
-
-import ro.unibuc.hello.data.FoodEntity;
-import ro.unibuc.hello.data.PartyEntity;
-import ro.unibuc.hello.data.TaskEntity;
-import ro.unibuc.hello.data.UserEntity;
-import ro.unibuc.hello.repositories.PartyRepository;
-import ro.unibuc.hello.repositories.TaskRepository;
-import ro.unibuc.hello.repositories.UserRepository;
-import ro.unibuc.hello.repositories.FoodRepository;
-import ro.unibuc.hello.repositories.LocationRepository;
-import ro.unibuc.hello.service.PartyService;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,10 +34,8 @@ public class PartyServiceTest {
     private FoodRepository foodRepository;
     @Mock
     private LocationRepository locationRepository;
-    @Mock
+    
     private MeterRegistry meterRegistry;
-
-    @InjectMocks
     private PartyService partyService;
     private PartyEntity party;
     private UserEntity user;

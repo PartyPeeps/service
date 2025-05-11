@@ -65,7 +65,7 @@ groups:
           description: "Even minimal CPU usage was detected: >0.001 over 1 minute."
 
       - alert: FoodWasAdded
-        expr: food_added_total > 0
+        expr: party_food_added_total > 0
         for: 1s
         labels:
           severity: info

@@ -11,10 +11,12 @@ route:
 receivers:
 - name: 'email'
   email_configs:
-  - to: 'franci.vlaicu@gmail.com'  # Schimbă cu adresa ta de email
-    from: 'franci.vlaicu@gmail.com'  # Schimbă cu adresa ta de email
+  
+  - to: 'lemnaruamedeeaelena@gmail.com'  # Schimbă cu adresa ta de email
+    from: 'lemnaruamedeeaelena@gmail.com'  # Schimbă cu adresa ta de email
     smarthost: 'smtp.gmail.com:587'  # Serverul SMTP pentru Gmail
-    auth_username: 'franci.vlaicu@gmail.com'  # Numele de utilizator pentru Gmail
-    auth_identity: 'franci.vlaicu@gmail.com'  # Numele de utilizator pentru Gmail
-    auth_password: 'octe fpzr vnmx ikfw'  # Folosește parola generată de aplicație
+    auth_username: 'lemnaruamedeeaelena@gmail.com'  # Numele de utilizator pentru Gmail
+    auth_identity: 'lemnaruamedeeaelena@gmail.com'  # Numele de utilizator pentru Gmail
+    auth_password: 'icog emvr hkbl pyyh'  # Folosește parola generată de aplicație
+
     send_resolved: true  # Vei primi și notificări când alerta este rezolvată
